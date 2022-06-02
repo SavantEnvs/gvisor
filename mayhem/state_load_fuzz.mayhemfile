@@ -1,0 +1,4 @@
+project: PROJECT
+target: state_load_fuzz
+cmds:
+- cmd: /out/state_load_fuzz
