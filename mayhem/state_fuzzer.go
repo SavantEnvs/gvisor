@@ -11,20 +11,22 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
-package fuzzing
+package fuzz
 
 import (
 	"bytes"
 	"context"
+	"testing"
+
 	"gvisor.dev/gvisor/pkg/buffer"
 	"gvisor.dev/gvisor/pkg/state"
 )
 
-func FuzzStateLoad(data []byte) int {
-	ctx := context.Background()
-	var toLoad *buffer.View
-	_, _ = state.Load(ctx, bytes.NewReader(data), toLoad)
-	return 1
+func FuzzStateLoad(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		ctx := context.Background()
+		var toLoad *buffer.View
+		_, _ = state.Load(ctx, bytes.NewReader(data), toLoad)
+	})
 }

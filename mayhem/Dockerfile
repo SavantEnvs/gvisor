@@ -14,10 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
-COPY . gvisor
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth=1 --branch=go https://github.com/google/gvisor $GOPATH/src/gvisor.dev/gvisor
 COPY mayhem/build.sh mayhem/state_fuzzer.go $SRC/
-ENV GVISOR_ROOT $SRC/gvisor
+ENV GVISOR_ROOT=$GOPATH/src/gvisor.dev/gvisor
 WORKDIR $GVISOR_ROOT
 
 ENV FUZZING_LANGUAGE=go SANITIZER=address
