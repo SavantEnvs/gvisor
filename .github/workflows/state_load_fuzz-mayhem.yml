@@ -29,6 +29,8 @@ jobs:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4.0.0
     - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@v6.0.0
@@ -43,7 +45,7 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
     - name: Start analysis
-      uses: forallsecure/mcode-action@long-runs
+      uses: ForAllSecure/mcode-action@long-runs
       with:
         mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
         args: --image ${{ steps.meta.outputs.tags }} --cmd /out/state_load_fuzz --target
