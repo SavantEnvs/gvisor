@@ -1,0 +1,6 @@
+project: savantenvs/gvisor
+# Preserve the historical target name so Mayhem run/corpus/defect history is not orphaned.
+target: state_load_fuzz
+cmds:
+  - cmd: /mayhem/state_load_fuzz
+    libfuzzer: true
