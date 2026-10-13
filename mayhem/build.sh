@@ -73,12 +73,19 @@ $CC $DEBUG_FLAGS -c /tmp/mayhem_anchor.c -o /tmp/mayhem_anchor.o
 # LSan off-switch (build-time; ASan+UBSan stay on). Sanctioned form per SPEC §6.2 item 15.
 $CXX $SANITIZER_FLAGS $DEBUG_FLAGS -c "$SRC/mayhem/lsan_off.cc" -o /tmp/mayhem_lsan_off.o
 
+# Go-runtime init-ordering shim: LLVMFuzzerInitialize waits for cgo's runtime init to finish
+# before libFuzzer reads coverage counters (QA #1118, #1123, #1644).
+$CC $GO_DEBUG_FLAGS -c "$SRC/mayhem/go_runtime_ready.c" -o /tmp/mayhem_go_runtime_ready.o
+
 # ── 4. build the libFuzzer archive for the native f.Fuzz harness, then link ────
 mkdir -p /tmp/mayhem-build
 ( cd "$GVGO/mayhemfuzz" && go-118-fuzz-build -o /tmp/mayhem-build/state_load_fuzz.a -func FuzzStateLoad . )
 $CXX $SANITIZER_FLAGS $LIB_FUZZING_ENGINE $DEBUG_FLAGS \
-  /tmp/mayhem_anchor.o /tmp/mayhem_lsan_off.o /tmp/mayhem-build/state_load_fuzz.a \
+  /tmp/mayhem_anchor.o /tmp/mayhem_lsan_off.o /tmp/mayhem_go_runtime_ready.o \
+  /tmp/mayhem-build/state_load_fuzz.a \
   -o "$SRC/state_load_fuzz"
+nm "$SRC/state_load_fuzz" | grep ' T LLVMFuzzerInitialize$' >/dev/null \
+  || { echo "build.sh: LLVMFuzzerInitialize init-ordering shim missing from $SRC/state_load_fuzz" >&2; exit 1; }
 echo ">> built $SRC/state_load_fuzz"
 
 # ── 5. build the authored behavioral KAT (run by mayhem/test.sh) ───────────────
